@@ -4,5 +4,10 @@ The `rviz_visuals` package contains the RVIZ configuration files for visualizing
 
 ![](./.media/rviz_visuals.png)
 
+## Usage
+```
+roslaunch rviz_visuals rviz_visuals.launch
+```
+
 ## Author
 Alejandro Daniel José Gómez Flórez (@aldajo92)
