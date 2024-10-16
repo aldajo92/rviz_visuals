@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>rviz_visuals</name>
+  <version>0.0.1</version>
+  <description>The rviz_visuals package</description>
+
+  <author email="alejodiscovery20@gmail.com">Alejandro Gomez</author>
+  <maintainer email="alejodiscovery20@gmail.com">Alejandro Gomez</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>rospy</build_export_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>rospy</exec_depend>
+
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>

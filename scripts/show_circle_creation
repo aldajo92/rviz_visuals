@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+import rospy
+from nav_msgs.msg import Path
+from geometry_msgs.msg import PoseStamped
+import math
+
+def create_circle_path(center_x, center_y, radius, angular_velocity, elapsed_time):
+    """
+    Create a PoseStamped for a point on a circle at a given time.
+    """
+    # Calculate position on the circle
+    x = center_x + radius * math.cos(angular_velocity * elapsed_time)
+    y = center_y + radius * math.sin(angular_velocity * elapsed_time)
+
+    # Create a PoseStamped message for the calculated position
+    pose = PoseStamped()
+    pose.header.stamp = rospy.Time.now()
+    pose.header.frame_id = "base_footprint"  # Adjust if needed
+    pose.pose.position.x = x
+    pose.pose.position.y = y
+    pose.pose.position.z = 0.0
+
+    # Orientation (identity quaternion)
+    pose.pose.orientation.x = 0.0
+    pose.pose.orientation.y = 0.0
+    pose.pose.orientation.z = 0.0
+    pose.pose.orientation.w = 1.0
+
+    return pose
+
+def publish_path():
+    # Initialize the ROS node
+    rospy.init_node('circle_path_publisher', anonymous=True)
+
+    # Create a publisher for the Path message
+    pub = rospy.Publisher('/circle_path', Path, queue_size=10)
+
+    # Set the rate of publishing
+    rate = rospy.Rate(10)  # 10 Hz
+
+    # Create a Path message
+    path = Path()
+    path.header.frame_id = "map"  # Change if necessary
+
+    # Define circle parameters
+    radius = 1.0
+    center_x, center_y = 0.0, 0.0
+    angular_velocity = 0.5
+    start_time = rospy.get_time()
+    
+    # Total time for a full revolution (2π/ω)
+    full_revolution_time = 2 * math.pi / angular_velocity
+
+    while not rospy.is_shutdown():
+        # Calculate elapsed time
+        current_time = rospy.get_time()
+        elapsed_time = current_time - start_time
+
+        # If a full revolution is completed, reset the path
+        if elapsed_time >= full_revolution_time:
+            path.poses.clear()  # Clear the path to reset
+            start_time = rospy.get_time()  # Reset start time for the next revolution
+            elapsed_time = 0  # Reset elapsed time
+
+        # Create a new point on the circle
+        pose = create_circle_path(center_x, center_y, radius, angular_velocity, elapsed_time)
+
+        # Add the PoseStamped to the path
+        path.poses.append(pose)
+        path.header.stamp = rospy.Time.now()
+
+        # Publish the Path message
+        pub.publish(path)
+
+        # Sleep to maintain loop rate
+        rate.sleep()
+
+if __name__ == '__main__':
+    try:
+        publish_path()
+    except rospy.ROSInterruptException:
+        pass

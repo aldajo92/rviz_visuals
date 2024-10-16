@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+import rospy
+from nav_msgs.msg import Path
+from geometry_msgs.msg import PoseStamped
+import math
+
+def create_circle_path(radius):
+    # Create a Path message
+    path = Path()
+    path.header.frame_id = "map"  # Adjust the frame if necessary
+
+    # Define circle parameters
+    center_x, center_y = 0.0, 0.0  # Center of the circle
+    num_points = 100  # Number of points to define the circle
+
+    # Generate the points of the circle
+    for i in range(num_points+1):
+        # Calculate angle for each point (divide the circle into equal segments)
+        angle = 2 * math.pi * i / num_points
+        
+        # Calculate the x and y position for the point on the circle
+        x = center_x + radius * math.cos(angle)
+        y = center_y + radius * math.sin(angle)
+
+        # Create a PoseStamped message for each point
+        pose = PoseStamped()
+        pose.header.stamp = rospy.Time.now()
+        pose.header.frame_id = "base_footprint"
+        pose.pose.position.x = x
+        pose.pose.position.y = y
+        pose.pose.position.z = 0.0
+        
+        # Set the orientation (optional, using identity quaternion)
+        pose.pose.orientation.x = 0.0
+        pose.pose.orientation.y = 0.0
+        pose.pose.orientation.z = 0.0
+        pose.pose.orientation.w = 1.0
+
+        # Add the pose to the path
+        path.poses.append(pose)
+
+    return path
+
+def publish_circle_path():
+    # Initialize the ROS node
+    rospy.init_node('circle_wave_publisher', anonymous=True)
+    
+    # Create a publisher for the Path message
+    pub = rospy.Publisher('/circle_wave', Path, queue_size=10)
+    
+    # Set the rate for the loop (adjust if necessary)
+    rate = rospy.Rate(50)  # 10 Hz, publish once per second
+    
+    # Incrementally increase the radius
+    radius = 0.05
+    
+    while not rospy.is_shutdown():
+        # Create the circular path for the current radius
+        path = create_circle_path(radius=radius)
+        
+        # Update the header timestamp for the Path
+        path.header.stamp = rospy.Time.now()
+        
+        # Publish the path
+        pub.publish(path)
+        
+        # Increment the radius for the next iteration
+        radius += 0.05  # Increase radius for the next circle
+
+        if radius > 5.0:
+            radius = 0.5
+
+        # Sleep to maintain the loop rate
+        rate.sleep()
+
+if __name__ == '__main__':
+    try:
+        publish_circle_path()
+    except rospy.ROSInterruptException:
+        pass

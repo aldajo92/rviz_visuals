@@ -1,0 +1,9 @@
+
+<launch>
+  <!-- Launch RViz -->
+  <node pkg="rviz" type="rviz" name="rviz" output="screen" args="-d $(find rviz_visuals)/rviz/rviz_visuals.rviz" />
+
+  <node pkg="rviz_visuals" type="show_circle_creation" name="circle_path" output="screen" />
+
+  <node pkg="rviz_visuals" type="show_circle_wave" name="circle_wave" output="screen" />
+</launch>
