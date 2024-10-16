@@ -3,6 +3,7 @@ import rospy
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
 import math
+import tf.transformations
 
 def create_circle_path(center_x, center_y, radius, angular_velocity, elapsed_time):
     """
@@ -12,6 +13,11 @@ def create_circle_path(center_x, center_y, radius, angular_velocity, elapsed_tim
     x = center_x + radius * math.cos(angular_velocity * elapsed_time)
     y = center_y + radius * math.sin(angular_velocity * elapsed_time)
 
+    # Calculate the tangent direction (yaw) for orientation
+    # The tangent direction is 90 degrees (π/2) ahead of the radial direction
+    theta = angular_velocity * elapsed_time
+    yaw = theta + math.pi / 2
+
     # Create a PoseStamped message for the calculated position
     pose = PoseStamped()
     pose.header.stamp = rospy.Time.now()
@@ -20,11 +26,14 @@ def create_circle_path(center_x, center_y, radius, angular_velocity, elapsed_tim
     pose.pose.position.y = y
     pose.pose.position.z = 0.0
 
-    # Orientation (identity quaternion)
-    pose.pose.orientation.x = 0.0
-    pose.pose.orientation.y = 0.0
-    pose.pose.orientation.z = 0.0
-    pose.pose.orientation.w = 1.0
+    # Create the quaternion from yaw (theta + π/2 for tangent)
+    quaternion = tf.transformations.quaternion_from_euler(0, 0, yaw)
+
+    # Set the orientation based on the tangent direction
+    pose.pose.orientation.x = quaternion[0]
+    pose.pose.orientation.y = quaternion[1]
+    pose.pose.orientation.z = quaternion[2]
+    pose.pose.orientation.w = quaternion[3]
 
     return pose
 
@@ -36,7 +45,7 @@ def publish_path():
     pub = rospy.Publisher('/circle_path', Path, queue_size=10)
 
     # Set the rate of publishing
-    rate = rospy.Rate(10)  # 10 Hz
+    rate = rospy.Rate(10)  # Hz
 
     # Create a Path message
     path = Path()
@@ -45,7 +54,7 @@ def publish_path():
     # Define circle parameters
     radius = 1.0
     center_x, center_y = 0.0, 0.0
-    angular_velocity = 0.5
+    angular_velocity = 2  # 2 Hz
     start_time = rospy.get_time()
     
     # Total time for a full revolution (2π/ω)
