@@ -124,6 +124,7 @@ include_directories(
 catkin_install_python(PROGRAMS
   scripts/show_circle_creation
   scripts/show_circle_wave
+  scripts/pose_array_normal_distribution
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

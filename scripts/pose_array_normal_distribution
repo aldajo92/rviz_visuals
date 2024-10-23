@@ -1,0 +1,72 @@
+#!/usr/bin/env python
+import rospy
+import random
+import math
+from geometry_msgs.msg import PoseArray, Pose
+from std_msgs.msg import Header
+import numpy as np
+
+def generate_pose_in_circle(radius):
+    # Generate random x, y coordinates with normal distribution
+    angle = random.uniform(0, 2 * math.pi)
+    r = np.random.normal(loc=radius/2.0, scale=radius/4.0)
+    r = max(0, min(r, radius))  # Clamp radius within bounds [0, radius]
+
+    # Polar to Cartesian conversion
+    x = r * math.cos(angle)
+    y = r * math.sin(angle)
+
+    pose = Pose()
+    pose.position.x = x
+    pose.position.y = y
+    pose.position.z = 0  # Z is set to 0 for 2D plane
+
+    # Generate random orientation in the XY plane (rotation around Z-axis)
+    orientation_angle = random.uniform(0, 2 * math.pi)
+
+    # Convert the orientation to quaternion (rotation around Z-axis)
+    pose.orientation.x = 0
+    pose.orientation.y = 0
+    pose.orientation.z = math.sin(orientation_angle / 2.0)
+    pose.orientation.w = math.cos(orientation_angle / 2.0)
+
+    return pose
+
+def publish_pose_array(radius, pose_count, frequency):
+    # Initialize the ROS node
+    rospy.init_node('pose_array_publisher', anonymous=True)
+
+    # Publisher for PoseArray
+    pub = rospy.Publisher('/pose_array', PoseArray, queue_size=10)
+
+    # Set the rate at which poses are published
+    rate = rospy.Rate(frequency)
+
+    # Keep publishing poses in a loop
+    while not rospy.is_shutdown():
+        pose_array = PoseArray()
+        pose_array.header = Header()
+        pose_array.header.stamp = rospy.Time.now()
+        pose_array.header.frame_id = "map"  # Use the appropriate frame
+
+        # Generate a series of poses
+        for _ in range(pose_count):
+            pose = generate_pose_in_circle(radius)
+            pose_array.poses.append(pose)
+
+            # Publish PoseArray with a single pose for each iteration
+            pub.publish(pose_array)
+
+            # Sleep to maintain frequency
+            rate.sleep()
+
+if __name__ == '__main__':
+    try:
+        # Set radius of the circle, number of poses, and publishing frequency
+        radius = 1.0           # Radius of the circle
+        pose_count = 100       # Number of poses to publish before restarting
+        frequency = 10         # Frequency of publishing in Hz
+
+        publish_pose_array(radius, pose_count, frequency)
+    except rospy.ROSInterruptException:
+        pass

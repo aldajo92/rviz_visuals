@@ -21,7 +21,7 @@ def create_circle_path(center_x, center_y, radius, angular_velocity, elapsed_tim
     # Create a PoseStamped message for the calculated position
     pose = PoseStamped()
     pose.header.stamp = rospy.Time.now()
-    pose.header.frame_id = "base_footprint"  # Adjust if needed
+    pose.header.frame_id = "map"  # Adjust if needed
     pose.pose.position.x = x
     pose.pose.position.y = y
     pose.pose.position.z = 0.0

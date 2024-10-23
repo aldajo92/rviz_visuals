@@ -1,9 +1,15 @@
 
 <launch>
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="map" output="screen" args="0 0 0 0 0 0 world map" />
+  
   <!-- Launch RViz -->
   <node pkg="rviz" type="rviz" name="rviz" output="screen" args="-d $(find rviz_visuals)/rviz/rviz_visuals.rviz" />
 
   <node pkg="rviz_visuals" type="show_circle_creation" name="circle_path" output="screen" />
 
   <node pkg="rviz_visuals" type="show_circle_wave" name="circle_wave" output="screen" />
+
+  <node pkg="rviz_visuals" type="pose_array_normal_distribution" name="pose_array_normal_distribution_node" output="screen" />
+
 </launch>
